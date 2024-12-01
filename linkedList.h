@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include <stdbool.h>
@@ -125,9 +126,17 @@ bool LinkedList_is_empty(void *list_ptr);
             assert(((__list_ptr__) != NULL) && (*(__list_ptr__) != NULL)); \
             LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
             assert((__index__ >= 0) && (__index__ < __temp_list__->length)); \
-            __Node *__node__ = __temp_list__->head; \
-            for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
-                __node__ = __node__->next; \
+            __Node *__node__ = NULL; \
+            if (__index__ < __temp_list__->length / 2) { \
+                __node__ = __temp_list__->head; \
+                for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
+                    __node__ = __node__->next; \
+                } \
+            } else { \
+                __node__ = __temp_list__->tail; \
+                for (size_t __i__ = __temp_list__->length - 1; __i__ > __index__; __i__--) { \
+                    __node__ = __node__->previous; \
+                } \
             } \
             *((typeof(**(__list_ptr__)) *)__node__->element); \
         })
@@ -147,9 +156,17 @@ bool LinkedList_is_empty(void *list_ptr);
             assert(((__list_ptr__) != NULL) && (*(__list_ptr__) != NULL)); \
             LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
             assert((__index__ >= 0) && (__index__ < __temp_list__->length)); \
-            __Node *__node__ = __temp_list__->head; \
-            for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
-                __node__ = __node__->next; \
+            __Node *__node__ = NULL; \
+            if (__index__ < __temp_list__->length / 2) { \
+                __node__ = __temp_list__->head; \
+                for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
+                    __node__ = __node__->next; \
+                } \
+            } else { \
+                __node__ = __temp_list__->tail; \
+                for (size_t __i__ = __temp_list__->length - 1; __i__ > __index__; __i__--) { \
+                    __node__ = __node__->previous; \
+                } \
             } \
             *(((__list_element_type__) *)__node__->element); \
         })
@@ -173,9 +190,17 @@ bool LinkedList_is_empty(void *list_ptr);
             assert((__result_ptr__) != NULL); \
             LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
             assert((__index__ >= 0) && (__index__ < __temp_list__->length)); \
-            __Node *__node__ = __temp_list__->head; \
-            for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
-                __node__ = __node__->next; \
+            __Node *__node__ = NULL; \
+            if (__index__ < __temp_list__->length / 2) { \
+                __node__ = __temp_list__->head; \
+                for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
+                    __node__ = __node__->next; \
+                } \
+            } else { \
+                __node__ = __temp_list__->tail; \
+                for (size_t __i__ = __temp_list__->length - 1; __i__ > __index__; __i__--) { \
+                    __node__ = __node__->previous; \
+                } \
             } \
             *(__result_ptr__) = *((typeof(**(__list_ptr__)) *)__node__->element); \
         } while(0)
@@ -198,9 +223,17 @@ bool LinkedList_is_empty(void *list_ptr);
             assert((__result_ptr__) != NULL); \
             LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
             assert((__index__ >= 0) && (__index__ < __temp_list__->length)); \
-            __Node *__node__ = __temp_list__->head; \
-            for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
-                __node__ = __node__->next; \
+            __Node *__node__ = NULL; \
+            if (__index__ < __temp_list__->length / 2) { \
+                __node__ = __temp_list__->head; \
+                for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
+                    __node__ = __node__->next; \
+                } \
+            } else { \
+                __node__ = __temp_list__->tail; \
+                for (size_t __i__ = __temp_list__->length - 1; __i__ > __index__; __i__--) { \
+                    __node__ = __node__->previous; \
+                } \
             } \
             *(__result_ptr__) = *(((__list_element_type__) *)__node__->element); \
         } while (0)
@@ -225,13 +258,22 @@ bool LinkedList_is_empty(void *list_ptr);
         LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
         assert((__index__ >= 0) && (__index__ < __temp_list__->length)); \
         assert(__temp_list__->element_size == sizeof(__element__)); \
-        __Node *__node__ = __temp_list__->head; \
-        for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
-            __node__ = __node__->next; \
+        __Node *__node__ = NULL; \
+        if (__index__ < __temp_list__->length / 2) { \
+            __node__ = __temp_list__->head; \
+            for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
+                __node__ = __node__->next; \
+            } \
+        } else { \
+            __node__ = __temp_list__->tail; \
+            for (size_t __i__ = __temp_list__->length - 1; __i__ > __index__; __i__--) { \
+                __node__ = __node__->previous; \
+            } \
         } \
         typeof(**(__list_ptr__)) __temp_var__ = (__element__); \
         memcpy(__node__->element, &__temp_var__, sizeof(__temp_var__)); \
     } while(0)
+
 #else
     /**
      * Public
@@ -251,9 +293,17 @@ bool LinkedList_is_empty(void *list_ptr);
         LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
         assert((__index__ >= 0) && (__index__ < __temp_list__->length)); \
         assert(__temp_list__->element_size == sizeof(__element__)); \
-        __Node *__node__ = __temp_list__->head; \
-        for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
-            __node__ = __node__->next; \
+        __Node *__node__ = NULL; \
+        if (__index__ < __temp_list__->length / 2) { \
+            __node__ = __temp_list__->head; \
+            for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
+                __node__ = __node__->next; \
+            } \
+        } else { \
+            __node__ = __temp_list__->tail; \
+            for (size_t __i__ = __temp_list__->length - 1; __i__ > __index__; __i__--) { \
+                __node__ = __node__->previous; \
+            } \
         } \
         __list_element_type__ __temp_var__ = (__element__); \
         memcpy(__node__->element, &__temp_var__, sizeof(__temp_var)); \
@@ -599,24 +649,45 @@ bool LinkedList_is_empty(void *list_ptr);
         memcpy(__node__->element, &__temp_var__, sizeof(__temp_var__)); \
         if (__index__ == 0) { \
             __node__->next = __temp_list__->head; \
-            __temp_list__->head->previous = __node__; \
+            if (__temp_list__->head) { \
+                __temp_list__->head->previous = __node__; \
+            } \
             __temp_list__->head = __node__; \
+            if (!__temp_list__->tail) { \
+                __temp_list__->tail = __node__; \
+            } \
         } else if (__index__ == __temp_list__->length) { \
             __node__->previous = __temp_list__->tail; \
-            __temp_list__->tail->next = __node__; \
+            if (__temp_list__->tail) { \
+                __temp_list__->tail->next = __node__; \
+            } \
             __temp_list__->tail = __node__; \
+            if (!__temp_list__->head) { \
+                __temp_list__->head = __node__; \
+            } \
         } else { \
-            __Node *__current_node__ = __temp_list__->head; \
-            for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
-                __current_node__ = __current_node__->next; \
+            __Node *__current_node__ = NULL; \
+            if (__index__ < __temp_list__->length / 2) { \
+                __current_node__ = __temp_list__->head; \
+                for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
+                    __current_node__ = __current_node__->next; \
+                } \
+            } else { \
+                __current_node__ = __temp_list__->tail; \
+                for (size_t __i__ = __temp_list__->length; __i__ > __index__; __i__--) { \
+                    __current_node__ = __current_node__->previous; \
+                } \
             } \
             __node__->next = __current_node__; \
             __node__->previous = __current_node__->previous; \
-            __current_node__->previous->next = __node__; \
+            if (__current_node__->previous) { \
+                __current_node__->previous->next = __node__; \
+            } \
             __current_node__->previous = __node__; \
         } \
         __temp_list__->length++; \
     } while(0)
+
 #else
     /**
      * Public
@@ -642,20 +713,40 @@ bool LinkedList_is_empty(void *list_ptr);
         memcpy(__node__->element, &__temp_var__, sizeof(__temp_var)); \
         if (__index__ == 0) { \
             __node__->next = __temp_list__->head; \
-            __temp_list__->head->previous = __node__; \
+            if (__temp_list__->head) { \
+                __temp_list__->head->previous = __node__; \
+            } \
             __temp_list__->head = __node__; \
+            if (!__temp_list__->tail) { \
+                __temp_list__->tail = __node__; \
+            } \
         } else if (__index__ == __temp_list__->length) { \
             __node__->previous = __temp_list__->tail; \
-            __temp_list__->tail->next = __node__; \
+            if (__temp_list__->tail) { \
+                __temp_list__->tail->next = __node__; \
+            } \
             __temp_list__->tail = __node__; \
+            if (!__temp_list__->head) { \
+                __temp_list__->head = __node__; \
+            } \
         } else { \
-            __Node *__current_node__ = __temp_list__->head; \
-            for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
-                __current_node__ = __current_node__->next; \
+            __Node *__current_node__ = NULL; \
+            if (__index__ < __temp_list__->length / 2) { \
+                __current_node__ = __temp_list__->head; \
+                for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
+                    __current_node__ = __current_node__->next; \
+                } \
+            } else { \
+                __current_node__ = __temp_list__->tail; \
+                for (size_t __i__ = __temp_list__->length; __i__ > __index__; __i__--) { \
+                    __current_node__ = __current_node__->previous; \
+                } \
             } \
             __node__->next = __current_node__; \
             __node__->previous = __current_node__->previous; \
-            __current_node__->previous->next = __node__; \
+            if (__current_node__->previous) { \
+                __current_node__->previous->next = __node__; \
+            } \
             __current_node__->previous = __node__; \
         } \
         __temp_list__->length++; \
@@ -909,59 +1000,126 @@ bool LinkedList_is_empty(void *list_ptr);
     } \
 } while(0)
 
-#if COMPILER_SUPPORTS_TYPEOF
-    /**
-     * Public
-     * 
-     * Removes the last element from the list.
-     * @param __list_ptr__ [T **] A reference to the list.
-     * @return [T] The removed element.
-     * @throw [assert] If the reference to the list is NULL.
-     * @throw [assert] If the list is NULL.
-     * @throw [assert] If the list is empty.
-     */
-    #define LinkedList_pop(__list_ptr__) *((typeof(**(__list_ptr__)) *) (((LinkedList *)(*(__list_ptr__)))->tail->element)); do { \
-        assert(((__list_ptr__) != NULL) && (*(__list_ptr__) != NULL)); \
-        LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
-        assert(__temp_list__->length > 0); \
-        __Node *__node__ = __temp_list__->tail; \
-        if (__node__->previous != NULL) { \
-            __node__->previous->next = NULL; \
-            __temp_list__->tail = __node__->previous; \
-        } else { \
-            __temp_list__->head = NULL; \
-            __temp_list__->tail = NULL; \
-        } \
-        __temp_list__->length--; \
-        free(__node__); \
-    } while(0)
+#if COMPILER_SUPPORTS_STATEMENT_EXPRESSIONS
+    #if COMPILER_SUPPORTS_TYPEOF
+        /**
+         * Public
+         * 
+         * Removes the last element from the list.
+         * @param __list_ptr__ [T **] A reference to the list.
+         * @return [T] The removed element.
+         * @throw [assert] If the reference to the list is NULL.
+         * @throw [assert] If the list is NULL.
+         * @throw [assert] If the list is empty.
+         */
+        #define LinkedList_pop(__list_ptr__) ({ \
+            assert(((__list_ptr__) != NULL) && (*(__list_ptr__) != NULL)); \
+            LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
+            assert(__temp_list__->length > 0); \
+            __Node *__node__ = __temp_list__->tail; \
+            typeof(**(__list_ptr__)) __element__ = *((typeof(**(__list_ptr__)) *)__node__->element); \
+            if (__node__->previous != NULL) { \
+                __node__->previous->next = NULL; \
+                __temp_list__->tail = __node__->previous; \
+            } else { \
+                __temp_list__->head = NULL; \
+                __temp_list__->tail = NULL; \
+            } \
+            __temp_list__->length--; \
+            free(__node__); \
+            __element__; \
+        })
+    #else
+        /**
+         * Public
+         * 
+         * Removes the last element from the list.
+         * @param __list_ptr__ [T **] A reference to the list.
+         * @param __list_element_type__ [type] The type of the elements in the list.
+         * @return [T] The removed element.
+         * @throw [assert] If the reference to the list is NULL.
+         * @throw [assert] If the list is NULL.
+         * @throw [assert] If the list is empty.
+         */
+        #define LinkedList_pop(__list_ptr__, __list_element_type__) ({ \
+            assert(((__list_ptr__) != NULL) && (*(__list_ptr__) != NULL)); \
+            LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
+            assert(__temp_list__->length > 0); \
+            __Node *__node__ = __temp_list__->tail; \
+            __list_element_type__ __element__ = *((__list_element_type__) __node__->element); \
+            if (__node__->previous != NULL) { \
+                __node__->previous->next = NULL; \
+                __temp_list__->tail = __node__->previous; \
+            } else { \
+                __temp_list__->head = NULL; \
+                __temp_list__->tail = NULL; \
+            } \
+            __temp_list__->length--; \
+            free(__node__); \
+            __element__; \
+        })
+    #endif
 #else
-    /**
-     * Public
-     * 
-     * Removes the last element from the list.
-     * @param __list_ptr__ [T **] A reference to the list.
-     * @param __list_element_type__ [type] The type of the elements in the list.
-     * @return [T] The removed element.
-     * @throw [assert] If the reference to the list is NULL.
-     * @throw [assert] If the list is NULL.
-     * @throw [assert] If the list is empty.
-     */
-    #define LinkedList_pop(__list_ptr__, __list_element_type__) *((__list_element_type__) (((LinkedList *)(*(__list_ptr__)))->tail->element)); do { \
-        assert(((__list_ptr__) != NULL) && (*(__list_ptr__) != NULL)); \
-        LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
-        assert(__temp_list__->length > 0); \
-        __Node *__node__ = __temp_list__->tail; \
-        if (__node__->previous != NULL) { \
-            __node__->previous->next = NULL; \
-            __temp_list__->tail = __node__->previous; \
-        } else { \
-            __temp_list__->head = NULL; \
-            __temp_list__->tail = NULL; \
-        } \
-        __temp_list__->length--; \
-        free(__node__); \
-    } while(0)
+    #if COMPILER_SUPPORTS_TYPEOF
+        /**
+         * Public
+         * 
+         * Removes the last element from the list.
+         * @param __list_ptr__ [T **] A reference to the list.
+         * @param __result_ptr__ [T *] A reference to the variable to store the removed element, if NULL the result will not be stored but the function will execute normally
+         * @throw [assert] If the reference to the list is NULL.
+         * @throw [assert] If the list is NULL.
+         * @throw [assert] If the list is empty.
+         */
+        #define LinkedList_pop(__list_ptr__, __result_ptr__) do { \
+            assert(((__list_ptr__) != NULL) && (*(__list_ptr__) != NULL)); \
+            LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
+            assert(__temp_list__->length > 0); \
+            __Node *__node__ = __temp_list__->tail; \
+            if (__result_ptr__ != NULL) { \
+                *(__result_ptr__) = *((typeof(**(__list_ptr__)) *)__node__->element); \
+            } \
+            if (__node__->previous != NULL) { \
+                __node__->previous->next = NULL; \
+                __temp_list__->tail = __node__->previous; \
+            } else { \
+                __temp_list__->head = NULL; \
+                __temp_list__->tail = NULL; \
+            } \
+            __temp_list__->length--; \
+            free(__node__); \
+        } while(0)
+    #else
+        /**
+         * Public
+         * 
+         * Removes the last element from the list.
+         * @param __list_ptr__ [T **] A reference to the list.
+         * @param __result_ptr__ [T *] A reference to the variable to store the removed element, if NULL the result will not be stored but the function will execute normally
+         * @param __list_element_type__ [type] The type of the elements in the list.
+         * @throw [assert] If the reference to the list is NULL.
+         * @throw [assert] If the list is NULL.
+         * @throw [assert] If the list is empty.
+         */
+        #define LinkedList_pop(__list_ptr__, __result_ptr__, __list_element_type__) do { \
+            assert(((__list_ptr__) != NULL) && (*(__list_ptr__) != NULL)); \
+            LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
+            assert(__temp_list__->length > 0); \
+            __Node *__node__ = __temp_list__->tail; \
+            if (__result_ptr__ != NULL) { \
+                *(__result_ptr__) = *(((__list_element_type__) *) __node__->element); \
+            } \
+            if (__node__->previous != NULL) { \
+                __node__->previous->next = NULL; \
+                __temp_list__->tail = __node__->previous; \
+            } else { \
+                __temp_list__->head = NULL; \
+                __temp_list__->tail = NULL; \
+            } \
+            __temp_list__->length--; \
+            free(__node__); \
+        } while(0)
+    #endif
 #endif
 
 // in here i cannot use the same trick as list_pop because i don't have direct access to the element
@@ -982,9 +1140,17 @@ bool LinkedList_is_empty(void *list_ptr);
             assert(((__list_ptr__) != NULL) && (*(__list_ptr__) != NULL)); \
             LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
             assert((__index__ >= 0) && (__index__ < __temp_list__->length)); \
-            __Node *__node__ = __temp_list__->head; \
-            for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
-                __node__ = __node__->next; \
+            __Node *__node__ = NULL; \
+            if (__index__ < __temp_list__->length / 2) { \
+                __node__ = __temp_list__->head; \
+                for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
+                    __node__ = __node__->next; \
+                } \
+            } else { \
+                __node__ = __temp_list__->tail; \
+                for (size_t __i__ = __temp_list__->length - 1; __i__ > __index__; __i__--) { \
+                    __node__ = __node__->previous; \
+                } \
             } \
             if (__node__->previous != NULL) { \
                 __node__->previous->next = __node__->next; \
@@ -1001,6 +1167,7 @@ bool LinkedList_is_empty(void *list_ptr);
             free(__node__); \
             __element__; \
         })
+
     #else
         /**
          * Public
@@ -1018,9 +1185,17 @@ bool LinkedList_is_empty(void *list_ptr);
             assert(((__list_ptr__) != NULL) && (*(__list_ptr__) != NULL)); \
             LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
             assert((__index__ >= 0) && (__index__ < __temp_list__->length)); \
-            __Node *__node__ = __temp_list__->head; \
-            for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
-                __node__ = __node__->next; \
+            __Node *__node__ = NULL; \
+            if (__index__ < __temp_list__->length / 2) { \
+                __node__ = __temp_list__->head; \
+                for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
+                    __node__ = __node__->next; \
+                } \
+            } else { \
+                __node__ = __temp_list__->tail; \
+                for (size_t __i__ = __temp_list__->length - 1; __i__ > __index__; __i__--) { \
+                    __node__ = __node__->previous; \
+                } \
             } \
             if (__node__->previous != NULL) { \
                 __node__->previous->next = __node__->next; \
@@ -1055,9 +1230,17 @@ bool LinkedList_is_empty(void *list_ptr);
             assert(((__list_ptr__) != NULL) && (*(__list_ptr__) != NULL)); \
             LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
             assert((__index__ >= 0) && (__index__ < __temp_list__->length)); \
-            __Node *__node__ = __temp_list__->head; \
-            for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
-                __node__ = __node__->next; \
+            __Node *__node__ = NULL; \
+            if (__index__ < __temp_list__->length / 2) { \
+                __node__ = __temp_list__->head; \
+                for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
+                    __node__ = __node__->next; \
+                } \
+            } else { \
+                __node__ = __temp_list__->tail; \
+                for (size_t __i__ = __temp_list__->length - 1; __i__ > __index__; __i__--) { \
+                    __node__ = __node__->previous; \
+                } \
             } \
             if (__node__->previous != NULL) { \
                 __node__->previous->next = __node__->next; \
@@ -1090,9 +1273,17 @@ bool LinkedList_is_empty(void *list_ptr);
             assert(((__list_ptr__) != NULL) && (*(__list_ptr__) != NULL)); \
             LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
             assert((__index__ >= 0) && (__index__ < __temp_list__->length)); \
-            __Node *__node__ = __temp_list__->head; \
-            for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
-                __node__ = __node__->next; \
+            __Node *__node__ = NULL; \
+            if (__index__ < __temp_list__->length / 2) { \
+                __node__ = __temp_list__->head; \
+                for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
+                    __node__ = __node__->next; \
+                } \
+            } else { \
+                __node__ = __temp_list__->tail; \
+                for (size_t __i__ = __temp_list__->length - 1; __i__ > __index__; __i__--) { \
+                    __node__ = __node__->previous; \
+                } \
             } \
             if (__node__->previous != NULL) { \
                 __node__->previous->next = __node__->next; \

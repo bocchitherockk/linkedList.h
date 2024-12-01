@@ -1,8 +1,6 @@
-TODO: Improve complexity by checking if index is closer to head or tail in 'LinkedList_insert_at', 'LinkedList_remove_at' and 'LinkedList_get_at'
 TODO: Add README.md
 
-
 DONE: Add comments documentation
-
+DONE: Improve complexity by checking if index is closer to head or tail in 'LinkedList_insert_at', 'LinkedList_remove_at' and 'LinkedList_get_at'
 
 CANCELLED: Refactor code via supported compiler features
