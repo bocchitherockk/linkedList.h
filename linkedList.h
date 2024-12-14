@@ -1,6 +1,8 @@
 #ifndef LINKEDLIST_H
 #define LINKEDLIST_H
 
+#include "./modules/system_env/system_env.h"
+
 #if LANGUAGE_CPP // C++ support
 extern "C" {
 #endif
@@ -11,7 +13,6 @@ extern "C" {
 #include <assert.h>
 #include <stdbool.h>
 
-#include "./modules/system_env/system_env.h"
 
 typedef struct __Node {
     struct __Node *next;
