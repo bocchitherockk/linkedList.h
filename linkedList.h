@@ -1665,6 +1665,72 @@ bool LinkedList_is_empty(void *list_ptr);
     __temp_list__->tail = __temp_node__; \
 } while(0)
 
+#define __LinkedList_merge__(__left_list_reference__, __right_list_reference__, __head_result_reference__, __tail_result_reference__, __ordering_comparator__, __list_element_type__) do { \
+    if ((*(__left_list_reference__)) == NULL) { \
+        *(__head_result_reference__) = (*(__right_list_reference__)); \
+    } else if ((*(__right_list_reference__)) == NULL) { \
+        *(__head_result_reference__) = (*(__left_list_reference__)); \
+    } else { \
+        __Node *__current_left__  = (*(__left_list_reference__)); \
+        __Node *__current_right__ = (*(__right_list_reference__)); \
+        __list_element_type__ __left_value__  = *((__list_element_type__ *)__current_left__->element); \
+        __list_element_type__ __right_value__ = *((__list_element_type__ *)__current_right__->element); \
+        if ((__ordering_comparator__)(__left_value__, __right_value__) <= 0) { \
+            *(__head_result_reference__)       = __current_left__; \
+            __current_left__ = __current_left__->next; \
+        } else { \
+            *(__head_result_reference__)        = __current_right__; \
+            __current_right__ = __current_right__->next; \
+        } \
+        __Node *__current_result__ = *(__head_result_reference__); \
+        while (__current_left__ != NULL && __current_right__ != NULL) { \
+            __left_value__  = *((__list_element_type__ *)__current_left__->element); \
+            __right_value__ = *((__list_element_type__ *)__current_right__->element); \
+            if ((__ordering_comparator__)(__left_value__, __right_value__) <= 0) { \
+                __current_result__->next   = __current_left__; \
+                __current_left__->previous = __current_result__; \
+                __current_left__           = __current_left__->next; \
+            } else { \
+                __current_result__->next    = __current_right__; \
+                __current_right__->previous = __current_result__; \
+                __current_right__           = __current_right__->next; \
+            } \
+            __current_result__ = __current_result__->next; \
+        } \
+        if (__current_left__ == NULL) { \
+            __current_result__->next    = __current_right__; \
+            __current_right__->previous = __current_result__; \
+        } \
+        else { \
+            __current_result__->next   = __current_left__; \
+            __current_left__->previous = __current_result__; \
+        } \
+        /* make __current_result__ point to the tail */ \
+        while (__current_result__->next != NULL) { \
+            __current_result__ = __current_result__->next; \
+        } \
+        *(__tail_result_reference__) = __current_result__; \
+    } \
+} while (0)
+
+#define __LinkedList_split__(__head_node_reference__, __second_list_reference__, __size__) do { \
+    __Node *__first__  = *(__head_node_reference__); \
+    __Node *__second__ = __first__; \
+    for (int i = 1; __first__ != NULL && i < (__size__); i++) { \
+        __first__ = __first__->next; \
+    } \
+    if (__first__ == NULL) { \
+        __second__ = NULL; \
+    } else { \
+        __second__ = __first__->next; \
+        if (__second__ != NULL) { \
+            __second__->previous = NULL; \
+        } \
+        __first__->next = NULL; \
+    } \
+    (*(__second_list_reference__)) = __second__; \
+} while (0)
+
 #if COMPILER_SUPPORTS_TYPEOF
     /**
      * Public
@@ -1676,24 +1742,34 @@ bool LinkedList_is_empty(void *list_ptr);
      * @throw [assert] If the list is NULL.
      */
     #define LinkedList_sort(__list_ptr__, __ordering_comparator__) do { \
-        assert(((__list_ptr__) != NULL) && (*(__list_ptr__) != NULL)); \
+        assert((__list_ptr__) != NULL && (*(__list_ptr__) != NULL)); \
         LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
-        __Node *__current_node__ = __temp_list__->head; \
-        while (__current_node__ != NULL) { \
-            __Node *__next_node__ = __current_node__->next; \
-            while (__next_node__ != NULL) { \
-                if (__ordering_comparator__(*((typeof(**(__list_ptr__)) *)__current_node__->element), *((typeof(**(__list_ptr__)) *)__next_node__->element)) > 0) { \
-                    void *__temp_element__ = malloc(__temp_list__->element_size); \
-                    memcpy(__temp_element__, __current_node__->element, __temp_list__->element_size); \
-                    memcpy(__current_node__->element, __next_node__->element, __temp_list__->element_size); \
-                    memcpy(__next_node__->element, __temp_element__, __temp_list__->element_size); \
-                    free(__temp_element__); \
+        /* if list contains 0 or 1 element do nothing */ \
+        if ((__temp_list__)->head != NULL && (__temp_list__)->head->next != NULL) { \
+            for (size_t __size__ = 1; __size__ < __temp_list__->length; __size__ *= 2) { \
+                __Node *__curr__ = (__temp_list__)->head; /* points at the first element of the list to be splitted and remerged */ \
+                __Node *__sorted_head__ = NULL; /* points at the first node of the subsorted list */ \
+                __Node *__sorted_tail__ = NULL; /* points at the last  node of the subsorted list */ \
+                while (__curr__ != NULL) { \
+                    __Node *__left_sublist__  = __curr__; \
+                    __Node *__right_sublist__;\
+                    __LinkedList_split__(&__left_sublist__ , &__right_sublist__, __size__); \
+                    __LinkedList_split__(&__right_sublist__, &__curr__, __size__); \
+                    __Node *__merged_list_head__, *__merged_list_tail__; \
+                    __LinkedList_merge__(&__left_sublist__, &__right_sublist__, &__merged_list_head__, &__merged_list_tail__, (__ordering_comparator__), typeof(**(__list_ptr__))); \
+                    if (__sorted_head__ == NULL) { \
+                        __sorted_head__ = __merged_list_head__; \
+                    } else { \
+                        __sorted_tail__->next = __merged_list_head__; \
+                        __merged_list_head__->previous = __sorted_tail__; \
+                    } \
+                    __sorted_tail__ = __merged_list_tail__; \
                 } \
-                __next_node__ = __next_node__->next; \
+                (__temp_list__)->head = __sorted_head__; \
+                (__temp_list__)->tail = __sorted_tail__; \
             } \
-            __current_node__ = __current_node__->next; \
         } \
-    } while(0)
+    } while (0)
 #else
     /**
      * Public
@@ -1706,24 +1782,34 @@ bool LinkedList_is_empty(void *list_ptr);
      * @throw [assert] If the list is NULL.
      */
     #define LinkedList_sort(__list_ptr__, __ordering_comparator__, __list_element_type__) do { \
-        assert(((__list_ptr__) != NULL) && (*(__list_ptr__) != NULL)); \
+        assert((__list_ptr__) != NULL && (*(__list_ptr__) != NULL)); \
         LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
-        __Node *__current_node__ = __temp_list__->head; \
-        while (__current_node__ != NULL) { \
-            __Node *__next_node__ = __current_node__->next; \
-            while (__next_node__ != NULL) { \
-                if (__ordering_comparator__(*((__list_element_type__) __current_node__->element), *((__list_element_type__) __next_node__->element)) > 0) { \
-                    void *__temp_element__ = malloc(__temp_list__->element_size); \
-                    memcpy(__temp_element__, __current_node__->element, __temp_list__->element_size); \
-                    memcpy(__current_node__->element, __next_node__->element, __temp_list__->element_size); \
-                    memcpy(__next_node__->element, __temp_element__, __temp_list__->element_size); \
-                    free(__temp_element__); \
+        /* if list contains 0 or 1 element do nothing */ \
+        if ((__temp_list__)->head != NULL && (__temp_list__)->head->next != NULL) { \
+            for (size_t __size__ = 1; __size__ < __temp_list__->length; __size__ *= 2) { \
+                __Node *__curr__ = (__temp_list__)->head; /* points at the first element of the list to be splitted and remerged */ \
+                __Node *__sorted_head__ = NULL; /* points at the first node of the subsorted list */ \
+                __Node *__sorted_tail__ = NULL; /* points at the last  node of the subsorted list */ \
+                while (__curr__ != NULL) { \
+                    __Node *__left_sublist__  = __curr__; \
+                    __Node *__right_sublist__;\
+                    __LinkedList_split__(&__left_sublist__ , &__right_sublist__, __size__); \
+                    __LinkedList_split__(&__right_sublist__, &__curr__, __size__); \
+                    __Node *__merged_list_head__, *__merged_list_tail__; \
+                    __LinkedList_merge__(&__left_sublist__, &__right_sublist__, &__merged_list_head__, &__merged_list_tail__, (__ordering_comparator__), __list_element_type__); \
+                    if (__sorted_head__ == NULL) { \
+                        __sorted_head__ = __merged_list_head__; \
+                    } else { \
+                        __sorted_tail__->next = __merged_list_head__; \
+                        __merged_list_head__->previous = __sorted_tail__; \
+                    } \
+                    __sorted_tail__ = __merged_list_tail__; \
                 } \
-                __next_node__ = __next_node__->next; \
+                (__temp_list__)->head = __sorted_head__; \
+                (__temp_list__)->tail = __sorted_tail__; \
             } \
-            __current_node__ = __current_node__->next; \
         } \
-    } while(0)
+    } while (0)
 #endif
 
 #if COMPILER_SUPPORTS_STATEMENT_EXPRESSIONS
