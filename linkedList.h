@@ -169,7 +169,7 @@ bool LinkedList_is_empty(void *list_ptr);
                     __node__ = __node__->previous; \
                 } \
             } \
-            *(((__list_element_type__) *)__node__->element); \
+            *((__list_element_type__ *)__node__->element); \
         })
     #endif
 #else
@@ -236,7 +236,7 @@ bool LinkedList_is_empty(void *list_ptr);
                     __node__ = __node__->previous; \
                 } \
             } \
-            *(__result_ptr__) = *(((__list_element_type__) *)__node__->element); \
+            *(__result_ptr__) = *((__list_element_type__ *)__node__->element); \
         } while (0)
     #endif
 #endif
@@ -364,7 +364,7 @@ bool LinkedList_is_empty(void *list_ptr);
             bool __found__ = false; \
             size_t __i__ = 0; \
             for ( ; __i__ < __temp_list__->length; __i__++) { \
-                if ((__boolean_comparator__)(*(((__list_element_type__) *)__node__->element), (__element__))) { \
+                if ((__boolean_comparator__)(*((__list_element_type__ *)__node__->element), (__element__))) { \
                     __found__ = true; \
                     break; \
                 } \
@@ -431,7 +431,7 @@ bool LinkedList_is_empty(void *list_ptr);
             bool __found__ = false; \
             size_t __i__ = 0; \
             for ( ; __i__ < __temp_list__->length; __i__++) { \
-                if ((__boolean_comparator__)(*(((__list_element_type__) *)__node__->element), (__element__))) { \
+                if ((__boolean_comparator__)(*((__list_element_type__ *)__node__->element), (__element__))) { \
                     __found__ = true; \
                     break; \
                 } \
@@ -492,7 +492,7 @@ bool LinkedList_is_empty(void *list_ptr);
             __Node *__node__ = __temp_list__->head; \
             size_t __count__ = 0; \
             for (size_t __i__ = 0; __i__ < __temp_list__->length; __i__++) { \
-                if ((__boolean_comparator__)(*(((__list_element_type__) *)__node__->element), (__element__))) { \
+                if ((__boolean_comparator__)(*((__list_element_type__ *)__node__->element), (__element__))) { \
                     __count__++; \
                 } \
                 __node__ = __node__->next; \
@@ -555,7 +555,7 @@ bool LinkedList_is_empty(void *list_ptr);
             __Node *__node__ = __temp_list__->head; \
             size_t __count__ = 0; \
             for (size_t __i__ = 0; __i__ < __temp_list__->length; __i__++) { \
-                if ((__boolean_comparator__)(*(((__list_element_type__) *)__node__->element), (__element__))) { \
+                if ((__boolean_comparator__)(*((__list_element_type__ *)__node__->element), (__element__))) { \
                     __count__++; \
                 } \
                 __node__ = __node__->next; \
@@ -611,7 +611,7 @@ bool LinkedList_is_empty(void *list_ptr);
         assert(__temp_list__->element_size == sizeof(__element__)); \
         __Node *__node__ = __node_init(__temp_list__->element_size); \
         __node__->previous = __temp_list__->tail; \
-        (__list_element_type__ *)__node__->element = (__element__); \
+        *((__list_element_type__ *)__node__->element) = (__element__); \
         if (__temp_list__->head == NULL) { \
             __temp_list__->head = __node__; \
         } else { \
@@ -827,7 +827,7 @@ bool LinkedList_is_empty(void *list_ptr);
             } else { \
                 __Node *__current_node__ = __temp_list__->head; \
                 while (__current_node__ != NULL) { \
-                    if ((__ordering_comparator__)(*(((__list_element_type__) *)__current_node__->element), (__element__)) >= 0) { \
+                    if ((__ordering_comparator__)(*((__list_element_type__ *)__current_node__->element), (__element__)) >= 0) { \
                         if (__current_node__->previous != NULL) { \
                             __current_node__->previous->next = __node__; \
                             __node__->previous = __current_node__->previous; \
@@ -930,7 +930,7 @@ bool LinkedList_is_empty(void *list_ptr);
             } else { \
                 __Node *__current_node__ = __temp_list__->head; \
                 while (__current_node__ != NULL) { \
-                    if ((__ordering_comparator__)(*(((__list_element_type__) *)__current_node__->element), (__element__)) >= 0) { \
+                    if ((__ordering_comparator__)(*((__list_element_type__ *)__current_node__->element), (__element__)) >= 0) { \
                         if (__current_node__->previous != NULL) { \
                             __current_node__->previous->next = __node__; \
                             __node__->previous = __current_node__->previous; \
@@ -1037,7 +1037,7 @@ bool LinkedList_is_empty(void *list_ptr);
             LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
             assert(__temp_list__->length > 0); \
             __Node *__node__ = __temp_list__->tail; \
-            __list_element_type__ __element__ = *((__list_element_type__) __node__->element); \
+            __list_element_type__ __element__ = *((__list_element_type__ *)__node__->element); \
             if (__node__->previous != NULL) { \
                 __node__->previous->next = NULL; \
                 __temp_list__->tail = __node__->previous; \
@@ -1098,7 +1098,7 @@ bool LinkedList_is_empty(void *list_ptr);
             assert(__temp_list__->length > 0); \
             __Node *__node__ = __temp_list__->tail; \
             if (__result_ptr__ != NULL) { \
-                *(__result_ptr__) = *(((__list_element_type__) *) __node__->element); \
+                *(__result_ptr__) = *((__list_element_type__ *) __node__->element); \
             } \
             if (__node__->previous != NULL) { \
                 __node__->previous->next = NULL; \
@@ -1199,7 +1199,7 @@ bool LinkedList_is_empty(void *list_ptr);
                 __temp_list__->tail = __node__->previous; \
             } \
             __temp_list__->length--; \
-            __list_element_type__ __element__ = *((__list_element_type__) __node__->element); \
+            __list_element_type__ __element__ = *((__list_element_type__ *)__node__->element); \
             free(__node__); \
             __element__; \
         })
@@ -1287,7 +1287,7 @@ bool LinkedList_is_empty(void *list_ptr);
                 __temp_list__->tail = __node__->previous; \
             } \
             __temp_list__->length--; \
-            if ((__result_ptr__) != NULL) { *(__result_ptr__) = *((__list_element_type__) __node__->element); } \
+            if ((__result_ptr__) != NULL) { *(__result_ptr__) = *((__list_element_type__ *)__node__->element); } \
             free(__node__); \
         } while(0)
     #endif
@@ -1359,7 +1359,7 @@ bool LinkedList_is_empty(void *list_ptr);
             bool __found__ = false; \
             size_t __i__ = 0; \
             for ( ; __i__ < __temp_list__->length; __i__++) { \
-                if ((__boolean_comparator__)(*(((__list_element_type__) *)__node__->element), (__element__))) { \
+                if ((__boolean_comparator__)(*((__list_element_type__ *)__node__->element), (__element__))) { \
                     if (__node__->previous != NULL) { \
                         __node__->previous->next = __node__->next; \
                     } else { \
@@ -1420,7 +1420,7 @@ bool LinkedList_is_empty(void *list_ptr);
                 } \
                 __node__ = __node__->next; \
             } \
-            assert(__found); \
+            assert(__found__); \
             if ((__result_ptr__) != NULL) { *(__result_ptr__) = __i__; } \
         } while(0)
     #else
@@ -1446,7 +1446,7 @@ bool LinkedList_is_empty(void *list_ptr);
             bool __found__ = false; \
             size_t __i__ = 0; \
             for ( ; __i__ < __temp_list__->length; __i__++) { \
-                if ((__boolean_comparator__)(*(((__list_element_type__) *)__node__->element), (__element__))) { \
+                if ((__boolean_comparator__)(*((__list_element_type__ *)__node__->element), (__element__))) { \
                     if (__node__->previous != NULL) { \
                         __node__->previous->next = __node__->next; \
                     } else { \
@@ -1463,7 +1463,7 @@ bool LinkedList_is_empty(void *list_ptr);
                 } \
                 __node__ = __node__->next; \
             } \
-            assert(__found); \
+            assert(__found__); \
             if ((__result_ptr__) != NULL) { *(__result_ptr__) = __i__; } \
         } while(0)
     #endif
@@ -1858,7 +1858,7 @@ bool LinkedList_is_empty(void *list_ptr);
             LinkedList *__temp_new_list__ = (LinkedList *)__new_list__; \
             __Node *__current_node__ = __temp_list__->head; \
             while (__current_node__ != NULL) { \
-                if ((__filter__)(*((__list_element_type__) __current_node__->element))) { \
+                if ((__filter__)(*((__list_element_type__ *)__current_node__->element))) { \
                     __Node *__node__ = __node_init(__temp_list__->element_size); \
                     *((__list_element_type__ *)__node__->element) = *((__list_element_type__ *)__current_node__->element); \
                     if (__temp_new_list__->head == NULL) { \
@@ -1935,7 +1935,7 @@ bool LinkedList_is_empty(void *list_ptr);
             LinkedList *__temp_new_list__ = (LinkedList *)__new_list__; \
             __Node *__current_node__ = __temp_list__->head; \
             while (__current_node__ != NULL) { \
-                if ((__filter__)(*((__list_element_type__) __current_node__->element))) { \
+                if ((__filter__)(*((__list_element_type__ *)__current_node__->element))) { \
                     __Node *__node__ = __node_init(__temp_list__->element_size); \
                     *((__list_element_type__ *)__node__->element) = *((__list_element_type__ *)__current_node__->element); \
                     if (__temp_new_list__->head == NULL) { \
@@ -1989,7 +1989,7 @@ bool LinkedList_is_empty(void *list_ptr);
         LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
         __Node *__current_node__ = __temp_list__->head; \
         while (__current_node__ != NULL) { \
-            (__func__)((__list_element_type__) __current_node__->element); \
+            (__func__)((__list_element_type__ *)__current_node__->element); \
             __current_node__ = __current_node__->next; \
         } \
     } while(0)
@@ -2050,7 +2050,7 @@ bool LinkedList_is_empty(void *list_ptr);
             __Node *__current_node__ = __temp_list__->head; \
             while (__current_node__ != NULL) { \
                 __Node *__node__ = __node_init(__temp_list__->element_size); \
-                *((__list_element_type__ *)__node__->element) = (__mapper__)(*((__list_element_type__) __current_node__->element)); \
+                *((__list_element_type__ *)__node__->element) = (__mapper__)(*((__list_element_type__ *)__current_node__->element)); \
                 if (__temp_new_list__->head == NULL) { \
                     __temp_new_list__->head = __node__; \
                 } else { \
@@ -2123,7 +2123,7 @@ bool LinkedList_is_empty(void *list_ptr);
             __Node *__current_node__ = __temp_list__->head; \
             while (__current_node__ != NULL) { \
                 __Node *__node__ = __node_init(__temp_list__->element_size); \
-                *((__list_element_type__ *)__node__->element) = (__mapper__)(*((__list_element_type__) __current_node__->element)); \
+                *((__list_element_type__ *)__node__->element) = (__mapper__)(*((__list_element_type__ *)__current_node__->element)); \
                 if (__temp_new_list__->head == NULL) { \
                     __temp_new_list__->head = __node__; \
                 } else { \
@@ -2182,7 +2182,7 @@ bool LinkedList_is_empty(void *list_ptr);
             __list_element_type__ __accumulator__ = (__initial_value__); \
             __Node *__current_node__ = __temp_list__->head; \
             while (__current_node__ != NULL) { \
-                __accumulator__ = (__reducer__)(__accumulator__, *((__list_element_type__) __current_node__->element)); \
+                __accumulator__ = (__reducer__)(__accumulator__, *((__list_element_type__ *)__current_node__->element)); \
                 __current_node__ = __current_node__->next; \
             } \
             __accumulator__; \
@@ -2235,7 +2235,7 @@ bool LinkedList_is_empty(void *list_ptr);
             __list_element_type__ __accumulator__ = (__initial_value__); \
             __Node *__current_node__ = __temp_list__->head; \
             while (__current_node__ != NULL) { \
-                __accumulator__ = (__reducer__)(__accumulator__, *((__list_element_type__) __current_node__->element)); \
+                __accumulator__ = (__reducer__)(__accumulator__, *((__list_element_type__ *)__current_node__->element)); \
                 __current_node__ = __current_node__->next; \
             } \
             *(__result_ptr__) = __accumulator__; \
@@ -2287,7 +2287,7 @@ bool LinkedList_is_empty(void *list_ptr);
             __Node *__current_node__ = __temp_list__->head; \
             bool __result__ = false; \
             while (__current_node__ != NULL) { \
-                if ((__func__)(*((__list_element_type__) __current_node__->element))) { \
+                if ((__func__)(*((__list_element_type__ *)__current_node__->element))) { \
                     __result__ = true; \
                     break; \
                 } \
@@ -2344,7 +2344,7 @@ bool LinkedList_is_empty(void *list_ptr);
             __Node *__current_node__ = __temp_list__->head; \
             bool __result__ = false; \
             while (__current_node__ != NULL) { \
-                if ((__func__)(*((__list_element_type__) __current_node__->element))) { \
+                if ((__func__)(*((__list_element_type__ *)__current_node__->element))) { \
                     __result__ = true; \
                     break; \
                 } \
@@ -2399,7 +2399,7 @@ bool LinkedList_is_empty(void *list_ptr);
             __Node *__current_node__ = __temp_list__->head; \
             bool __result__ = true; \
             while (__current_node__ != NULL) { \
-                if (!(__func__)(*((__list_element_type__) __current_node__->element))) { \
+                if (!(__func__)(*((__list_element_type__ *)__current_node__->element))) { \
                     __result__ = false; \
                     break; \
                 } \
@@ -2456,7 +2456,7 @@ bool LinkedList_is_empty(void *list_ptr);
             __Node *__current_node__ = __temp_list__->head; \
             bool __result__ = true; \
             while (__current_node__ != NULL) { \
-                if (!(__func__)(*((__list_element_type__) __current_node__->element))) { \
+                if (!(__func__)(*((__list_element_type__ *)__current_node__->element))) { \
                     __result__ = false; \
                     break; \
                 } \
@@ -2554,7 +2554,7 @@ bool LinkedList_is_empty(void *list_ptr);
             } \
             while (__i__ < __end__) { \
                 __Node *__node__ = __node_init(__temp_list__->element_size); \
-                *((__list_element_type__ *)__node__->element) = *((__list_element_type__) __current_node__->element); \
+                *((__list_element_type__ *)__node__->element) = *((__list_element_type__ *)__current_node__->element); \
                 if (__temp_new_list__->head == NULL) { \
                     __temp_new_list__->head = __node__; \
                 } else { \
@@ -2656,7 +2656,7 @@ bool LinkedList_is_empty(void *list_ptr);
             assert((__end__ >= 0) && (__end__ <= __temp_list__->length)); \
             assert(__start__ < __end__); \
             assert(__step__ > 0); \
-            __list_element_type__ *__new_list__ = LinkedList_init(__list_element_type); \
+            __list_element_type__ *__new_list__ = LinkedList_init(__list_element_type__); \
             LinkedList *__temp_new_list__ = (LinkedList *)__new_list__; \
             __Node *__current_node__ = __temp_list__->head; \
             size_t __i__ = 0; \
@@ -2665,7 +2665,7 @@ bool LinkedList_is_empty(void *list_ptr);
             } \
             while (__i__ < __end__) { \
                 __Node *__node__ = __node_init(__temp_list__->element_size); \
-                *((__list_element_type__ *)__node__->element) = *((__list_element_type__) __current_node__->element); \
+                *((__list_element_type__ *)__node__->element) = *((__list_element_type__ *)__current_node__->element); \
                 if (__temp_new_list__->head == NULL) { \
                     __temp_new_list__->head = __node__; \
                 } else { \

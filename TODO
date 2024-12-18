@@ -1,7 +1,8 @@
-TODO: Give the developer access for underlying Node datatype, and the ability to work with the nodes (this will help improve the efficiency)
 TODO: Add caching mechanism for the previously accessed Node and it's index to improve efficiency (accessing a close node to the previous one accessed is a common thing to do)
+TODO: Give the developer access for underlying Node datatype, and the ability to work with the nodes (this will help improve the efficiency)
 TODO: Add README.md
 
+DONE: Add compiler-features based in the demo
 DONE: Remove unecessary memcpy function calls (just cast the result and set it)
 DONE: Improve the time complexity for the function 'LinkedList_sort'
 DONE: Add comments documentation

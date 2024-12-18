@@ -1,6 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -g
-LDFLAGS = -I../ -llinkedList -L../lib -Wl,-rpath=../lib # valgrind does not work with statically linked libraries
+# LDFLAGS = -I../ -llinkedList -L../lib -Wl,-rpath=../lib
+LDFLAGS = -I../ -llinkedList -L../lib --static # valgrind does not work with statically linked libraries
 
 files = "demo.c"
  
