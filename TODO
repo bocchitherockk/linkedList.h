@@ -1,11 +1,11 @@
-TODO: Add caching mechanism for the previously accessed Node and it's index to improve efficiency (accessing a close node to the previous one accessed is a common thing to do)
-TODO: Give the developer access for underlying Node datatype, and the ability to work with the nodes (this will help improve the efficiency)
 TODO: Add README.md
 
+DONE: Add caching mechanism for the previously accessed Node and it's index to improve efficiency (accessing a close node to the previous one accessed is a common thing to do)
 DONE: Add compiler-features based in the demo
 DONE: Remove unecessary memcpy function calls (just cast the result and set it)
 DONE: Improve the time complexity for the function 'LinkedList_sort'
 DONE: Add comments documentation
 DONE: Improve complexity by checking if index is closer to head or tail in 'LinkedList_insert_at', 'LinkedList_remove_at' and 'LinkedList_get_at'
 
+CANCELLED: Give the developer access for underlying Node datatype, and the ability to work with the nodes (this will help improve the efficiency)
 CANCELLED: Refactor code via supported compiler features

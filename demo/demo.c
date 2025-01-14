@@ -94,7 +94,7 @@ int main(void) {
 
     printf("index of the first 5 in list 1: %lu\n", index);
 
-    printf("getting the count of 5s in vec1 ...\n");
+    printf("getting the count of 5s in list 1 ...\n");
     #if COMPILER_SUPPORTS_STATEMENT_EXPRESSIONS
         #if COMPILER_SUPPORTS_TYPEOF
             size_t count = LinkedList_count(&list_1, 5, int_boolean_comparator);

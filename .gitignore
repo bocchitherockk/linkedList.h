@@ -6,3 +6,5 @@ object
 modules/*
 !modules/modules.json
 !modules/script.py
+
+TAGS

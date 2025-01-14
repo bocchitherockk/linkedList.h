@@ -3,7 +3,7 @@ CFLAGS = -Wall -g
 LDFLAGS = -I./modules/system_env
 
 files = "linkedList.c"
- 
+
 verbose_mode = $(or $(verbose), $(v))
 
 ############ compile ############

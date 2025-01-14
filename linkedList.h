@@ -33,8 +33,10 @@ __Node *__node_init(size_t element_size);
 typedef struct LinkedList {
     __Node *head;
     __Node *tail;
+    __Node *cached;
     size_t length;
     size_t element_size;
+    size_t cached_index;
 } LinkedList;
 
 /**
@@ -72,6 +74,18 @@ size_t LinkedList_element_size(void *list_ptr);
 /**
  * Public
  * 
+ * Returns the index of the cached node.
+ * @param list_ptr [T **] A reference to the list.
+ * @return [size_t] The index of the cached node.
+ * @throw [assert] If the reference to the list is NULL.
+ * @throw [assert] If the list is NULL.
+ * @throw [assert] If the cached node is NULL.
+ */
+size_t LinkedList_cached_index(void *list_ptr);
+
+/**
+ * Public
+ * 
  * Returns whether the list is empty.
  * @param list_ptr [T **] A reference to the list.
  * @return [bool] Whether the list is empty.
@@ -79,6 +93,22 @@ size_t LinkedList_element_size(void *list_ptr);
  * @throw [assert] If the list is NULL.
  */
 bool LinkedList_is_empty(void *list_ptr);
+
+/**
+ * Private
+ * 
+ * Locates the nearest node to the specified index.
+ * @param list_ptr [T **] A reference to the list.
+ * @param index [size_t] The index to locate.
+ * @param result [__Node **] A reference to the result.
+ * @param direction [int *] A reference to the direction.
+ * @param result_index [int *] A reference to the result index.
+ * @throw [assert] If the reference to the list is NULL.
+ * @throw [assert] If the list is NULL.
+ * @throw [assert] If the result reference is NULL.
+ * @throw [assert] If the direction reference is NULL.
+ */
+void __linkedlist_locate_nearest_node(void *list_ptr, size_t index, __Node **result, int *direction, size_t *result_index);
 
 /**
  * Public
@@ -127,19 +157,24 @@ bool LinkedList_is_empty(void *list_ptr);
             assert(((__list_ptr__) != NULL) && (*(__list_ptr__) != NULL)); \
             LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
             assert((__index__ >= 0) && (__index__ < __temp_list__->length)); \
-            __Node *__node__ = NULL; \
-            if (__index__ < __temp_list__->length / 2) { \
-                __node__ = __temp_list__->head; \
-                for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
-                    __node__ = __node__->next; \
+            __Node *__nearest_node__ = NULL; \
+            int __direction__ = 0; \
+            size_t __nearest_node_index__ = 0; \
+            __linkedlist_locate_nearest_node(__list_ptr__, __index__, &__nearest_node__, &__direction__, &__nearest_node_index__); \
+            if (__direction__ == 1) { \
+                while (__nearest_node_index__ != __index__) { \
+                    __nearest_node__ = __nearest_node__->next; \
+                    __nearest_node_index__++; \
                 } \
             } else { \
-                __node__ = __temp_list__->tail; \
-                for (size_t __i__ = __temp_list__->length - 1; __i__ > __index__; __i__--) { \
-                    __node__ = __node__->previous; \
+                while (__nearest_node_index__ != __index__) { \
+                    __nearest_node__ = __nearest_node__->previous; \
+                    __nearest_node_index__--; \
                 } \
             } \
-            *((typeof(**(__list_ptr__)) *)__node__->element); \
+            __temp_list__->cached = __nearest_node__; \
+            __temp_list__->cached_index = __index__; \
+            *((typeof(**(__list_ptr__)) *)__nearest_node__->element); \
         })
     #else
         /**
@@ -157,19 +192,24 @@ bool LinkedList_is_empty(void *list_ptr);
             assert(((__list_ptr__) != NULL) && (*(__list_ptr__) != NULL)); \
             LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
             assert((__index__ >= 0) && (__index__ < __temp_list__->length)); \
-            __Node *__node__ = NULL; \
-            if (__index__ < __temp_list__->length / 2) { \
-                __node__ = __temp_list__->head; \
-                for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
-                    __node__ = __node__->next; \
+            __Node *__nearest_node__ = NULL; \
+            int __direction__ = 0; \
+            size_t __nearest_node_index__ = 0; \
+            __linkedlist_locate_nearest_node(__list_ptr__, __index__, &__nearest_node__, &__direction__, &__nearest_node_index__); \
+            if (__direction__ == 1) { \
+                while (__nearest_node_index__ != __index__) { \
+                    __nearest_node__ = __nearest_node__->next; \
+                    __nearest_node_index__++; \
                 } \
             } else { \
-                __node__ = __temp_list__->tail; \
-                for (size_t __i__ = __temp_list__->length - 1; __i__ > __index__; __i__--) { \
-                    __node__ = __node__->previous; \
+                while (__nearest_node_index__ != __index__) { \
+                    __nearest_node__ = __nearest_node__->previous; \
+                    __nearest_node_index__--; \
                 } \
             } \
-            *((__list_element_type__ *)__node__->element); \
+            __temp_list__->cached = __nearest_node__; \
+            __temp_list__->cached_index = __index__; \
+            *((__list_element_type__ *)__nearest_node__->element); \
         })
     #endif
 #else
@@ -188,22 +228,26 @@ bool LinkedList_is_empty(void *list_ptr);
          */
         #define LinkedList_get(__list_ptr__, __index__, __result_ptr__) do { \
             assert(((__list_ptr__) != NULL) && (*(__list_ptr__) != NULL)); \
-            assert((__result_ptr__) != NULL); \
             LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
             assert((__index__ >= 0) && (__index__ < __temp_list__->length)); \
-            __Node *__node__ = NULL; \
-            if (__index__ < __temp_list__->length / 2) { \
-                __node__ = __temp_list__->head; \
-                for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
-                    __node__ = __node__->next; \
+            __Node *__nearest_node__ = NULL; \
+            int __direction__ = 0; \
+            size_t __nearest_node_index__ = 0; \
+            __linkedlist_locate_nearest_node(__list_ptr__, __index__, &__nearest_node__, &__direction__, &__nearest_node_index__); \
+            if (__direction__ == 1) { \
+                while (__nearest_node_index__ != __index__) { \
+                    __nearest_node__ = __nearest_node__->next; \
+                    __nearest_node_index__++; \
                 } \
             } else { \
-                __node__ = __temp_list__->tail; \
-                for (size_t __i__ = __temp_list__->length - 1; __i__ > __index__; __i__--) { \
-                    __node__ = __node__->previous; \
+                while (__nearest_node_index__ != __index__) { \
+                    __nearest_node__ = __nearest_node__->previous; \
+                    __nearest_node_index__--; \
                 } \
             } \
-            *(__result_ptr__) = *((typeof(**(__list_ptr__)) *)__node__->element); \
+            __temp_list__->cached = __nearest_node__; \
+            __temp_list__->cached_index = __index__; \
+            *(__result_ptr__) = *((typeof(**(__list_ptr__)) *)__nearest_node__->element); \
         } while(0)
     #else
         /**
@@ -221,22 +265,26 @@ bool LinkedList_is_empty(void *list_ptr);
          */
         #define LinkedList_get(__list_ptr__, __index__, __result_ptr__, __list_element_type__) do { \
             assert(((__list_ptr__) != NULL) && (*(__list_ptr__) != NULL)); \
-            assert((__result_ptr__) != NULL); \
             LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
             assert((__index__ >= 0) && (__index__ < __temp_list__->length)); \
-            __Node *__node__ = NULL; \
-            if (__index__ < __temp_list__->length / 2) { \
-                __node__ = __temp_list__->head; \
-                for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
-                    __node__ = __node__->next; \
+            __Node *__nearest_node__ = NULL; \
+            int __direction__ = 0; \
+            size_t __nearest_node_index__ = 0; \
+            __linkedlist_locate_nearest_node(__list_ptr__, __index__, &__nearest_node__, &__direction__, &__nearest_node_index__); \
+            if (__direction__ == 1) { \
+                while (__nearest_node_index__ != __index__) { \
+                    __nearest_node__ = __nearest_node__->next; \
+                    __nearest_node_index__++; \
                 } \
             } else { \
-                __node__ = __temp_list__->tail; \
-                for (size_t __i__ = __temp_list__->length - 1; __i__ > __index__; __i__--) { \
-                    __node__ = __node__->previous; \
+                while (__nearest_node_index__ != __index__) { \
+                    __nearest_node__ = __nearest_node__->previous; \
+                    __nearest_node_index__--; \
                 } \
             } \
-            *(__result_ptr__) = *((__list_element_type__ *)__node__->element); \
+            __temp_list__->cached = __nearest_node__; \
+            __temp_list__->cached_index = __index__; \
+            *(__result_ptr__) = *((__list_element_type__ *)__nearest_node__->element); \
         } while (0)
     #endif
 #endif
@@ -259,19 +307,24 @@ bool LinkedList_is_empty(void *list_ptr);
         LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
         assert((__index__ >= 0) && (__index__ < __temp_list__->length)); \
         assert(__temp_list__->element_size == sizeof(__element__)); \
-        __Node *__node__ = NULL; \
-        if (__index__ < __temp_list__->length / 2) { \
-            __node__ = __temp_list__->head; \
-            for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
-                __node__ = __node__->next; \
+        __Node *__nearest_node__ = NULL; \
+        int __direction__ = 0; \
+        size_t __nearest_node_index__ = 0; \
+        __linkedlist_locate_nearest_node(__list_ptr__, __index__, &__nearest_node__, &__direction__, &__nearest_node_index__); \
+        if (__direction__ == 1) { \
+            while (__nearest_node_index__ != __index__) { \
+                __nearest_node__ = __nearest_node__->next; \
+                __nearest_node_index__++; \
             } \
         } else { \
-            __node__ = __temp_list__->tail; \
-            for (size_t __i__ = __temp_list__->length - 1; __i__ > __index__; __i__--) { \
-                __node__ = __node__->previous; \
+            while (__nearest_node_index__ != __index__) { \
+                __nearest_node__ = __nearest_node__->previous; \
+                __nearest_node_index__--; \
             } \
         } \
-        *((typeof(**(__list_ptr__))) *__node__->element) = (__element__); \
+        __temp_list__->cached = __nearest_node__; \
+        __temp_list__->cached_index = __index__; \
+        *((typeof(**(__list_ptr__))) *__nearest_node__->element) = (__element__); \
     } while(0)
 
 #else
@@ -293,19 +346,24 @@ bool LinkedList_is_empty(void *list_ptr);
         LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
         assert((__index__ >= 0) && (__index__ < __temp_list__->length)); \
         assert(__temp_list__->element_size == sizeof(__element__)); \
-        __Node *__node__ = NULL; \
-        if (__index__ < __temp_list__->length / 2) { \
-            __node__ = __temp_list__->head; \
-            for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
-                __node__ = __node__->next; \
+        __Node *__nearest_node__ = NULL; \
+        int __direction__ = 0; \
+        size_t __nearest_node_index__ = 0; \
+        __linkedlist_locate_nearest_node(__list_ptr__, __index__, &__nearest_node__, &__direction__, &__nearest_node_index__); \
+        if (__direction__ == 1) { \
+            while (__nearest_node_index__ != __index__) { \
+                __nearest_node__ = __nearest_node__->next; \
+                __nearest_node_index__++; \
             } \
         } else { \
-            __node__ = __temp_list__->tail; \
-            for (size_t __i__ = __temp_list__->length - 1; __i__ > __index__; __i__--) { \
-                __node__ = __node__->previous; \
+            while (__nearest_node_index__ != __index__) { \
+                __nearest_node__ = __nearest_node__->previous; \
+                __nearest_node_index__--; \
             } \
         } \
-        *((__list_element_type__ *)__node__->element) = (__element__); \
+        __temp_list__->cached = __nearest_node__; \
+        __temp_list__->cached_index = __index__; \
+        *((__list_element_type__ *)__nearest_node__->element) = (__element__); \
     } while(0)
 #endif
 
@@ -339,6 +397,8 @@ bool LinkedList_is_empty(void *list_ptr);
                 __node__ = __node__->next; \
             } \
             assert(__found__); \
+            __temp_list__->cached = __node__; \
+            __temp_list__->cached_index = __i__; \
             __i__; \
         })
     #else
@@ -371,6 +431,8 @@ bool LinkedList_is_empty(void *list_ptr);
                 __node__ = __node__->next; \
             } \
             assert(__found__); \
+            __temp_list__->cached = __node__; \
+            __temp_list__->cached_index = __i__; \
             __i__; \
         })
     #endif
@@ -405,6 +467,8 @@ bool LinkedList_is_empty(void *list_ptr);
                 __node__ = __node__->next; \
             } \
             assert(__found__); \
+            __temp_list__->cached = __node__; \
+            __temp_list__->cached_index = __i__; \
             *(__result_ptr__) = __i__; \
         } while(0)
     #else
@@ -438,6 +502,8 @@ bool LinkedList_is_empty(void *list_ptr);
                 __node__ = __node__->next; \
             } \
             assert(__found__); \
+            __temp_list__->cached = __node__; \
+            __temp_list__->cached_index = __i__; \
             *(__result_ptr__) = __i__; \
         } while(0)
     #endif
@@ -652,6 +718,7 @@ bool LinkedList_is_empty(void *list_ptr);
             if (!__temp_list__->tail) { \
                 __temp_list__->tail = __node__; \
             } \
+            __temp_list__->cached_index++; \
         } else if (__index__ == __temp_list__->length) { \
             __node__->previous = __temp_list__->tail; \
             if (__temp_list__->tail) { \
@@ -662,24 +729,29 @@ bool LinkedList_is_empty(void *list_ptr);
                 __temp_list__->head = __node__; \
             } \
         } else { \
-            __Node *__current_node__ = NULL; \
-            if (__index__ < __temp_list__->length / 2) { \
-                __current_node__ = __temp_list__->head; \
-                for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
-                    __current_node__ = __current_node__->next; \
+            __Node *__nearest_node__ = NULL; \
+            int __direction__ = 0; \
+            size_t __nearest_node_index__ = 0; \
+            __linkedlist_locate_nearest_node(__list_ptr__, __index__, &__nearest_node__, &__direction__, &__nearest_node_index__); \
+            if (__direction__ == 1) { \
+                while (__nearest_node_index__ != __index__) { \
+                    __nearest_node__ = __nearest_node__->next; \
+                    __nearest_node_index__++; \
                 } \
             } else { \
-                __current_node__ = __temp_list__->tail; \
-                for (size_t __i__ = __temp_list__->length; __i__ > __index__; __i__--) { \
-                    __current_node__ = __current_node__->previous; \
+                while (__nearest_node_index__ != __index__) { \
+                    __nearest_node__ = __nearest_node__->previous; \
+                    __nearest_node_index__--; \
                 } \
             } \
-            __node__->next = __current_node__; \
-            __node__->previous = __current_node__->previous; \
-            if (__current_node__->previous) { \
-                __current_node__->previous->next = __node__; \
+            __node__->next = __nearest_node__; \
+            __node__->previous = __nearest_node__->previous; \
+            if (__nearest_node__->previous) { \
+                __nearest_node__->previous->next = __node__; \
             } \
-            __current_node__->previous = __node__; \
+            __nearest_node__->previous = __node__; \
+            __temp_list__->cached = __node__; \
+            __temp_list__->cached_index = __index__; \
         } \
         __temp_list__->length++; \
     } while(0)
@@ -715,6 +787,7 @@ bool LinkedList_is_empty(void *list_ptr);
             if (!__temp_list__->tail) { \
                 __temp_list__->tail = __node__; \
             } \
+            __temp_list__->cached_index++; \
         } else if (__index__ == __temp_list__->length) { \
             __node__->previous = __temp_list__->tail; \
             if (__temp_list__->tail) { \
@@ -725,24 +798,29 @@ bool LinkedList_is_empty(void *list_ptr);
                 __temp_list__->head = __node__; \
             } \
         } else { \
-            __Node *__current_node__ = NULL; \
-            if (__index__ < __temp_list__->length / 2) { \
-                __current_node__ = __temp_list__->head; \
-                for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
-                    __current_node__ = __current_node__->next; \
+            __Node *__nearest_node__ = NULL; \
+            int __direction__ = 0; \
+            size_t __nearest_node_index__ = 0; \
+            __linkedlist_locate_nearest_node(__list_ptr__, __index__, &__nearest_node__, &__direction__, &__nearest_node_index__); \
+            if (__direction__ == 1) { \
+                while (__nearest_node_index__ != __index__) { \
+                    __nearest_node__ = __nearest_node__->next; \
+                    __nearest_node_index__++; \
                 } \
             } else { \
-                __current_node__ = __temp_list__->tail; \
-                for (size_t __i__ = __temp_list__->length; __i__ > __index__; __i__--) { \
-                    __current_node__ = __current_node__->previous; \
+                while (__nearest_node_index__ != __index__) { \
+                    __nearest_node__ = __nearest_node__->previous; \
+                    __nearest_node_index__--; \
                 } \
             } \
-            __node__->next = __current_node__; \
-            __node__->previous = __current_node__->previous; \
-            if (__current_node__->previous) { \
-                __current_node__->previous->next = __node__; \
+            __node__->next = __nearest_node__; \
+            __node__->previous = __nearest_node__->previous; \
+            if (__nearest_node__->previous) { \
+                __nearest_node__->previous->next = __node__; \
             } \
-            __current_node__->previous = __node__; \
+            __nearest_node__->previous = __node__; \
+            __temp_list__->cached = __node__; \
+            __temp_list__->cached_index = __index__; \
         } \
         __temp_list__->length++; \
     } while(0)
@@ -786,6 +864,8 @@ bool LinkedList_is_empty(void *list_ptr);
                         __node__->next = __current_node__; \
                         __current_node__->previous = __node__; \
                         break; \
+                        __temp_list__->cached = __node__; \
+                        __temp_list__->cached_index = __insert_index__; \
                     } \
                     __current_node__ = __current_node__->next; \
                     __insert_index__++; \
@@ -837,6 +917,8 @@ bool LinkedList_is_empty(void *list_ptr);
                         __node__->next = __current_node__; \
                         __current_node__->previous = __node__; \
                         break; \
+                        __temp_list__->cached = __node__; \
+                        __temp_list__->cached_index = __insert_index__; \
                     } \
                     __current_node__ = __current_node__->next; \
                     __insert_index__++; \
@@ -889,6 +971,8 @@ bool LinkedList_is_empty(void *list_ptr);
                         __node__->next = __current_node__; \
                         __current_node__->previous = __node__; \
                         break; \
+                        __temp_list__->cached = __node__; \
+                        __temp_list__->cached_index = __insert_index__; \
                     } \
                     __current_node__ = __current_node__->next; \
                     __insert_index__++; \
@@ -940,6 +1024,8 @@ bool LinkedList_is_empty(void *list_ptr);
                         __node__->next = __current_node__; \
                         __current_node__->previous = __node__; \
                         break; \
+                        __temp_list__->cached = __node__; \
+                        __temp_list__->cached_index = __insert_index__; \
                     } \
                     __current_node__ = __current_node__->next; \
                     __insert_index__++; \
@@ -1131,31 +1217,40 @@ bool LinkedList_is_empty(void *list_ptr);
             assert(((__list_ptr__) != NULL) && (*(__list_ptr__) != NULL)); \
             LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
             assert((__index__ >= 0) && (__index__ < __temp_list__->length)); \
-            __Node *__node__ = NULL; \
-            if (__index__ < __temp_list__->length / 2) { \
-                __node__ = __temp_list__->head; \
-                for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
-                    __node__ = __node__->next; \
+            __Node *__nearest_node__ = NULL; \
+            int __direction__ = 0; \
+            size_t __nearest_node_index__ = 0; \
+            __linkedlist_locate_nearest_node(__list_ptr__, __index__, &__nearest_node__, &__direction__, &__nearest_node_index__); \
+            if (__direction__ == 1) { \
+                while (__nearest_node_index__ != __index__) { \
+                    __nearest_node__ = __nearest_node__->next; \
+                    __nearest_node_index__++; \
                 } \
             } else { \
-                __node__ = __temp_list__->tail; \
-                for (size_t __i__ = __temp_list__->length - 1; __i__ > __index__; __i__--) { \
-                    __node__ = __node__->previous; \
+                while (__nearest_node_index__ != __index__) { \
+                    __nearest_node__ = __nearest_node__->previous; \
+                    __nearest_node_index__--; \
                 } \
             } \
-            if (__node__->previous != NULL) { \
-                __node__->previous->next = __node__->next; \
+            if (__nearest_node__->next != NULL && __nearest_node__->previous != NULL) { \
+                __temp_list__->cached = __nearest_node__->next; \
+                __temp_list__->cached_index = __index__; \
             } else { \
-                __temp_list__->head = __node__->next; \
+                __temp_list__->cached = NULL; \
             } \
-            if (__node__->next != NULL) { \
-                __node__->next->previous = __node__->previous; \
+            if (__nearest_node__->previous != NULL) { \
+                __nearest_node__->previous->next = __nearest_node__->next; \
             } else { \
-                __temp_list__->tail = __node__->previous; \
+                __temp_list__->head = __nearest_node__->next; \
+            } \
+            if (__nearest_node__->next != NULL) { \
+                __nearest_node__->next->previous = __nearest_node__->previous; \
+            } else { \
+                __temp_list__->tail = __nearest_node__->previous; \
             } \
             __temp_list__->length--; \
-            typeof(**(__list_ptr__)) __element__ = *((typeof(**(__list_ptr__)) *)__node__->element); \
-            free(__node__); \
+            typeof(**(__list_ptr__)) __element__ = *((typeof(**(__list_ptr__)) *)__nearest_node__->element); \
+            free(__nearest_node__); \
             __element__; \
         })
 
@@ -1176,31 +1271,40 @@ bool LinkedList_is_empty(void *list_ptr);
             assert(((__list_ptr__) != NULL) && (*(__list_ptr__) != NULL)); \
             LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
             assert((__index__ >= 0) && (__index__ < __temp_list__->length)); \
-            __Node *__node__ = NULL; \
-            if (__index__ < __temp_list__->length / 2) { \
-                __node__ = __temp_list__->head; \
-                for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
-                    __node__ = __node__->next; \
+            __Node *__nearest_node__ = NULL; \
+            int __direction__ = 0; \
+            size_t __nearest_node_index__ = 0; \
+            __linkedlist_locate_nearest_node(__list_ptr__, __index__, &__nearest_node__, &__direction__, &__nearest_node_index__); \
+            if (__direction__ == 1) { \
+                while (__nearest_node_index__ != __index__) { \
+                    __nearest_node__ = __nearest_node__->next; \
+                    __nearest_node_index__++; \
                 } \
             } else { \
-                __node__ = __temp_list__->tail; \
-                for (size_t __i__ = __temp_list__->length - 1; __i__ > __index__; __i__--) { \
-                    __node__ = __node__->previous; \
+                while (__nearest_node_index__ != __index__) { \
+                    __nearest_node__ = __nearest_node__->previous; \
+                    __nearest_node_index__--; \
                 } \
             } \
-            if (__node__->previous != NULL) { \
-                __node__->previous->next = __node__->next; \
+            if (__nearest_node__->next != NULL && __nearest_node__->previous != NULL) { \
+                __temp_list__->cached = __nearest_node__->next; \
+                __temp_list__->cached_index = __index__; \
             } else { \
-                __temp_list__->head = __node__->next; \
+                __temp_list__->cached = NULL; \
             } \
-            if (__node__->next != NULL) { \
-                __node__->next->previous = __node__->previous; \
+            if (__nearest_node__->previous != NULL) { \
+                __nearest_node__->previous->next = __nearest_node__->next; \
             } else { \
-                __temp_list__->tail = __node__->previous; \
+                __temp_list__->head = __nearest_node__->next; \
+            } \
+            if (__nearest_node__->next != NULL) { \
+                __nearest_node__->next->previous = __nearest_node__->previous; \
+            } else { \
+                __temp_list__->tail = __nearest_node__->previous; \
             } \
             __temp_list__->length--; \
-            __list_element_type__ __element__ = *((__list_element_type__ *)__node__->element); \
-            free(__node__); \
+            __list_element_type__ __element__ = *((__list_element_type__ *)__nearest_node__->element); \
+            free(__nearest_node__); \
             __element__; \
         })
     #endif
@@ -1221,31 +1325,42 @@ bool LinkedList_is_empty(void *list_ptr);
             assert(((__list_ptr__) != NULL) && (*(__list_ptr__) != NULL)); \
             LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
             assert((__index__ >= 0) && (__index__ < __temp_list__->length)); \
-            __Node *__node__ = NULL; \
-            if (__index__ < __temp_list__->length / 2) { \
-                __node__ = __temp_list__->head; \
-                for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
-                    __node__ = __node__->next; \
+            __Node *__nearest_node__ = NULL; \
+            int __direction__ = 0; \
+            size_t __nearest_node_index__ = 0; \
+            __linkedlist_locate_nearest_node(__list_ptr__, __index__, &__nearest_node__, &__direction__, &__nearest_node_index__); \
+            if (__direction__ == 1) { \
+                while (__nearest_node_index__ != __index__) { \
+                    __nearest_node__ = __nearest_node__->next; \
+                    __nearest_node_index__++; \
                 } \
             } else { \
-                __node__ = __temp_list__->tail; \
-                for (size_t __i__ = __temp_list__->length - 1; __i__ > __index__; __i__--) { \
-                    __node__ = __node__->previous; \
+                while (__nearest_node_index__ != __index__) { \
+                    __nearest_node__ = __nearest_node__->previous; \
+                    __nearest_node_index__--; \
                 } \
             } \
-            if (__node__->previous != NULL) { \
-                __node__->previous->next = __node__->next; \
+            if (__nearest_node__->next != NULL && __nearest_node__->previous != NULL) { \
+                __temp_list__->cached = __nearest_node__->next; \
+                __temp_list__->cached_index = __index__; \
             } else { \
-                __temp_list__->head = __node__->next; \
+                __temp_list__->cached = NULL; \
             } \
-            if (__node__->next != NULL) { \
-                __node__->next->previous = __node__->previous; \
+            if (__nearest_node__->previous != NULL) { \
+                __nearest_node__->previous->next = __nearest_node__->next; \
             } else { \
-                __temp_list__->tail = __node__->previous; \
+                __temp_list__->head = __nearest_node__->next; \
+            } \
+            if (__nearest_node__->next != NULL) { \
+                __nearest_node__->next->previous = __nearest_node__->previous; \
+            } else { \
+                __temp_list__->tail = __nearest_node__->previous; \
             } \
             __temp_list__->length--; \
-            if ((__result_ptr__) != NULL) { *(__result_ptr__) = *((typeof(**(__list_ptr__)) *)__node__->element); } \
-            free(__node__); \
+            if ((__result_ptr__) != NULL) { \
+                *(__result_ptr__) = *((typeof(**(__list_ptr__)) *)__nearest_node__->element); \
+            } \
+            free(__nearest_node__); \
         } while(0)
     #else
         /**
@@ -1264,31 +1379,42 @@ bool LinkedList_is_empty(void *list_ptr);
             assert(((__list_ptr__) != NULL) && (*(__list_ptr__) != NULL)); \
             LinkedList *__temp_list__ = (LinkedList *)(*(__list_ptr__)); \
             assert((__index__ >= 0) && (__index__ < __temp_list__->length)); \
-            __Node *__node__ = NULL; \
-            if (__index__ < __temp_list__->length / 2) { \
-                __node__ = __temp_list__->head; \
-                for (size_t __i__ = 0; __i__ < __index__; __i__++) { \
-                    __node__ = __node__->next; \
+            __Node *__nearest_node__ = NULL; \
+            int __direction__ = 0; \
+            size_t __nearest_node_index__ = 0; \
+            __linkedlist_locate_nearest_node(__list_ptr__, __index__, &__nearest_node__, &__direction__, &__nearest_node_index__); \
+            if (__direction__ == 1) { \
+                while (__nearest_node_index__ != __index__) { \
+                    __nearest_node__ = __nearest_node__->next; \
+                    __nearest_node_index__++; \
                 } \
             } else { \
-                __node__ = __temp_list__->tail; \
-                for (size_t __i__ = __temp_list__->length - 1; __i__ > __index__; __i__--) { \
-                    __node__ = __node__->previous; \
+                while (__nearest_node_index__ != __index__) { \
+                    __nearest_node__ = __nearest_node__->previous; \
+                    __nearest_node_index__--; \
                 } \
             } \
-            if (__node__->previous != NULL) { \
-                __node__->previous->next = __node__->next; \
+            if (__nearest_node__->next != NULL && __nearest_node__->previous != NULL) { \
+                __temp_list__->cached = __nearest_node__->next; \
+                __temp_list__->cached_index = __index__; \
             } else { \
-                __temp_list__->head = __node__->next; \
+                __temp_list__->cached = NULL; \
             } \
-            if (__node__->next != NULL) { \
-                __node__->next->previous = __node__->previous; \
+            if (__nearest_node__->previous != NULL) { \
+                __nearest_node__->previous->next = __nearest_node__->next; \
             } else { \
-                __temp_list__->tail = __node__->previous; \
+                __temp_list__->head = __nearest_node__->next; \
+            } \
+            if (__nearest_node__->next != NULL) { \
+                __nearest_node__->next->previous = __nearest_node__->previous; \
+            } else { \
+                __temp_list__->tail = __nearest_node__->previous; \
             } \
             __temp_list__->length--; \
-            if ((__result_ptr__) != NULL) { *(__result_ptr__) = *((__list_element_type__ *)__node__->element); } \
-            free(__node__); \
+            if ((__result_ptr__) != NULL) { \
+                *(__result_ptr__) = *((__list_element_type__ *)__nearest_node__->element); \
+            } \
+            free(__nearest_node__); \
         } while(0)
     #endif
 #endif
@@ -1317,6 +1443,12 @@ bool LinkedList_is_empty(void *list_ptr);
             size_t __i__ = 0; \
             for ( ; __i__ < __temp_list__->length; __i__++) { \
                 if ((__boolean_comparator__)(*((typeof(**(__list_ptr__)) *)__node__->element), (__element__))) { \
+                    if (__node__->previous != NULL && __node__->next != NULL) { \
+                        __temp_list__->cached = __node__->next; \
+                        __temp_list__->cached_index = __i__; \
+                    } else { \
+                        __temp_list__->cached = NULL; \
+                    } \
                     if (__node__->previous != NULL) { \
                         __node__->previous->next = __node__->next; \
                     } else { \
@@ -1360,6 +1492,12 @@ bool LinkedList_is_empty(void *list_ptr);
             size_t __i__ = 0; \
             for ( ; __i__ < __temp_list__->length; __i__++) { \
                 if ((__boolean_comparator__)(*((__list_element_type__ *)__node__->element), (__element__))) { \
+                    if (__node__->previous != NULL && __node__->next != NULL) { \
+                        __temp_list__->cached = __node__->next; \
+                        __temp_list__->cached_index = __i__; \
+                    } else { \
+                        __temp_list__->cached = NULL; \
+                    } \
                     if (__node__->previous != NULL) { \
                         __node__->previous->next = __node__->next; \
                     } else { \
@@ -1404,6 +1542,12 @@ bool LinkedList_is_empty(void *list_ptr);
             size_t __i__ = 0; \
             for ( ; __i__ < __temp_list__->length; __i__++) { \
                 if ((__boolean_comparator__)(*((typeof(**(__list_ptr__)) *)__node__->element), (__element__))) { \
+                    if (__node__->previous != NULL && __node__->next != NULL) { \
+                        __temp_list__->cached = __node__->next; \
+                        __temp_list__->cached_index = __i__; \
+                    } else { \
+                        __temp_list__->cached = NULL; \
+                    } \
                     if (__node__->previous != NULL) { \
                         __node__->previous->next = __node__->next; \
                     } else { \
@@ -1447,6 +1591,12 @@ bool LinkedList_is_empty(void *list_ptr);
             size_t __i__ = 0; \
             for ( ; __i__ < __temp_list__->length; __i__++) { \
                 if ((__boolean_comparator__)(*((__list_element_type__ *)__node__->element), (__element__))) { \
+                    if (__node__->previous != NULL && __node__->next != NULL) { \
+                        __temp_list__->cached = __node__->next; \
+                        __temp_list__->cached_index = __i__; \
+                    } else { \
+                        __temp_list__->cached = NULL; \
+                    } \
                     if (__node__->previous != NULL) { \
                         __node__->previous->next = __node__->next; \
                     } else { \
@@ -1488,6 +1638,7 @@ bool LinkedList_is_empty(void *list_ptr);
     } \
     __temp_list__->head = NULL; \
     __temp_list__->tail = NULL; \
+    __temp_list__->cached = NULL; \
     __temp_list__->length = 0; \
 } while(0)
 
@@ -1653,6 +1804,7 @@ bool LinkedList_is_empty(void *list_ptr);
     __Node *__temp_node__ = __temp_list__->head; \
     __temp_list__->head = __temp_list__->tail; \
     __temp_list__->tail = __temp_node__; \
+    __temp_list__->cached_index = __temp_list__->length - 1 - __temp_list__->cached_index; \
 } while(0)
 
 #define __LinkedList_merge__(__left_list_reference__, __right_list_reference__, __head_result_reference__, __tail_result_reference__, __ordering_comparator__, __list_element_type__) do { \
@@ -1759,6 +1911,7 @@ bool LinkedList_is_empty(void *list_ptr);
                 (__temp_list__)->tail = __sorted_tail__; \
             } \
         } \
+        __temp_list__->cached = NULL; \
     } while (0)
 #else
     /**
@@ -1799,6 +1952,7 @@ bool LinkedList_is_empty(void *list_ptr);
                 (__temp_list__)->tail = __sorted_tail__; \
             } \
         } \
+        __temp_list__->cached = NULL; \
     } while (0)
 #endif
 
