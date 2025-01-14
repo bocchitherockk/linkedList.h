@@ -1,0 +1,95 @@
+# Linkedlist.h
+
+## Generic Linkedlist Library in C
+
+This Generic Linkedlist Library provides a flexible and efficient way to manage Linkedlists in C. It supports useful necessary operations from initialization to insertion, deletion, alongside utility functions for sorting, filtering, mapping, and reducing.
+
+### Installation
+
+To integrate this Library into your project, follow these steps:
+
+1. Clone the repository into your project directory.
+2. Cd into the 'modules' directory and execute the python script to git clone the necessary dependencies, (you can do it manually if you want, they are listed in the modules.json file).
+3. Cd back and build the source code (create dynamic and static libraries) by executing the command `make export`
+4. Include the Linkedlist.h header file in your own project and don't forget to compile it without linking with one of the libraries (you can instead compile the linkedList.c with no need to create a library and link with it). `gcc -o out my_files.c -l:liblinkedList.a -Lpath/to/lib -Wl,-rpath=path/to/lib`
+5. Happy coding 🤓
+
+### Compilers
+
+This library uses preprocessor directives defined in the `system_env` module to ensure compatibility with different C compilers by checking support for:
+
+-   Statement expressions
+-   Typeof keyword
+
+This library provides suppport for `c++` as well by preventing name mangling.
+
+### How to use
+
+#### 1. Initialization and Destruction
+
+```c
+#include <lambda.h> // https://github.com/bocchitherockk/lambda.h (this is not necessary, you can create normal functions and use them as parameters)
+#include "./Linkedlist.h"
+
+int main(void) {
+    int *list = LinkedList_init(int); // `list` is initialized as a linked list of integers
+    LinkedList_destroy(&list); // The list gets freed from the memory alongside all its nodes and cannot be used again as it points to NULL, unless reinitialized
+}
+```
+
+#### 2. General information
+
+```c
+    size_t length         = Vector_length(&list);
+    size_t element_size   = Vector_element_size(&list);
+    size_t cached_index   = Vector_cached_index(&list);
+    bool   is_empty       = Vector_is_empty(&list);
+```
+
+#### 3. Adding Elements
+
+```c
+    LinkedList_push(&list, 10); // Adds the element 10 to the end of the list
+    LinkedList_insert_at(&list, 1, 100); // inserts 100 at index 1
+    int insertion_index = LinkedList_insert_sorted(&list, 5, lambda(int, (int value_in_list, int value_as_param) { return value_in_list - value_as_param; }));
+    // inserts 5 in it's sorted position, considering that the list is already sorted and returns the index inserted in
+    LinkedList_concat(&list, &list2); // pushes the elements in list2 to the end of list
+```
+
+#### 4. Accessing Elements
+
+```c
+    int value = LinkedList_get(&list, 0); // Access the first element
+    LinkedList_get(&list, 3, 15); // setting the value at index 3 to 15
+```
+
+#### 5. Removing Elements
+
+```c
+    int value, index;
+    value = LinkedList_pop(&list); // Removes the last element and returns it
+    value = LinkedList_remove_at(&list, 3); // Removes the value at the index 3 and returns it
+    index = LinkedList_remove_value(&list, 10, lambda(bool, (int value_in_list, int value_as_param), { return value_in_list == value_as_param; }))
+    // Removes a given value from the list and returns it's index
+    // A function is provided as an argument because costum data types do not get compared using ==
+    // Also this adds flexibility in terms of using other logic rather than a simple ==
+    // if no value matches the callback function, an assertion error will be raised
+    LinkedList_clear(&list); // Clears all values from the list
+```
+
+#### 6. Utility Functions
+
+```c
+    int index = LinkedList1_index(&list, 10, lambda(bool, (int value_in_list, int value_as_param), { return value_in_list == value_as_param; })) // returns the index of the first value that validates the compare function. If none, raise an assertion error
+    int count = LinkedList_count(&list, 10, lambda(bool, (int value_in_list, int value_as_param), { return value_in_list == value_as_param; })) // returns the number of elements that validate the compare function
+    int *list2 = LinkedList_copy(&list) // returns a shallow copy of the list
+    LinkedList_reverse(&list) // reverses the list in place
+    LinkedList_sort(&list, lambda(int, (int value_in_list, int value_as_param), { return value_in_list - value_as_param; })); // Sorts the list in place according to the sorting function given using merge sort algorithm
+    int *list3 = LinkedList_filter(&list, lambda(bool, (int value_in_list), { return int value_in_list % 2 == 0; })); // returns a new filtered list of even numbers
+    LinkedList_foreach(&list, lambda(void, (int *value_in_list_ptr), { *value_in_list_ptr *= 2; })); // multiplies each value in the list by 2, modifies the list in place
+    int *list4 = LinkedList_map(&list, lambda(int, (int value_in_list), { return value_in_list + 2; }), int); // Returns a new list with each value mapped by the mapper function, the result of the map function is a list and it's type is specified in the third parameter
+    int sum = LinkedList_reduce(&list, lambda(int, (int accumulator, int value_in_list), { return accumulator + value_in_list; }), 0); // Calculates the sum of elements
+    bool all = LinkedList_all(&list, lambda(bool, (int value_in_list), { return value_in_list == 10; })); // checks to see if all values in the list verify the callback function (the callback returns true)
+    bool any = LinkedList_any(&list, lambda(bool, (int value_in_list), { return value_in_list == 10; })); // checks to see if any of the values in the list verify the callback function
+    int *list5 = LinkedList_slice(&list, 0, LinkedList_length(&list), 2); // slices list from index 0 to LinkedList_length(list) by a step 2 and returns it
+```
